@@ -10,6 +10,33 @@ const productSchema = new Schema(
 			type: String,
 			required: true,
 		},
+
+		size: {
+			type: String,
+			required: false,
+		},
+		count: {
+			type: Number,
+			default: 1,
+		},
+
+		color: {
+			type: String,
+			required: true,
+		},
+
+		material: {
+			type: String,
+			required: false,
+		},
+		category: {
+			type: Schema.Types.ObjectId,
+			require: true,
+		},
+		brand: {
+			type: String,
+			required: false,
+		},
 		offerPrice: {
 			type: String,
 		},
