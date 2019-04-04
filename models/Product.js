@@ -10,7 +10,6 @@ const productSchema = new Schema(
 			type: String,
 			required: true,
 		},
-
 		size: {
 			type: String,
 			required: false,
@@ -31,6 +30,7 @@ const productSchema = new Schema(
 		},
 		category: {
 			type: Schema.Types.ObjectId,
+			ref: "Category",
 			require: true,
 		},
 		brand: {
