@@ -4,60 +4,61 @@ const productSchema = new Schema(
 	{
 		title: {
 			type: String,
-			required: true,
+			required: true
 		},
 		price: {
 			type: String,
-			required: true,
+			required: true
 		},
+
 		size: {
 			type: String,
-			required: false,
+			required: false
 		},
 		count: {
 			type: Number,
-			default: 1,
+			default: 1
 		},
 
 		color: {
 			type: String,
-			required: true,
+			required: true
 		},
 
 		material: {
 			type: String,
-			required: false,
+			required: false
 		},
 		category: {
 			type: Schema.Types.ObjectId,
 			ref: "Category",
-			require: true,
+			require: true
 		},
 		brand: {
 			type: String,
-			required: false,
+			required: false
 		},
 		offerPrice: {
-			type: String,
+			type: String
 		},
 		description: {
 			type: String,
-			required: true,
+			required: true
 		},
 		imageUrl: {
 			type: String,
-			required: true,
+			required: true
 		},
 		creator: {
 			type: Schema.Types.ObjectId,
 			ref: "User",
-			required: true,
+			required: true
 		},
 		spec: [
 			{
 				name: { type: String, required: true },
-				desc: { type: String, required: true },
-			},
+				desc: { type: String, required: true }
+			}
 		],
 		comments: [
 			{
@@ -66,17 +67,17 @@ const productSchema = new Schema(
 				userId: {
 					type: Schema.Types.ObjectId,
 					ref: "User",
-					required: true,
-				},
-			},
-		],
+					required: true
+				}
+			}
+		]
 	},
-	{ timestamps: true },
+	{ timestamps: true }
 );
 productSchema.methods.addComment = function(content, userId) {
 	this.comments.push({
 		content,
-		userId,
+		userId
 	});
 	return this.save();
 };

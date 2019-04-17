@@ -5,26 +5,30 @@ const preUserSchema = new Schema(
 	{
 		name: {
 			type: String,
-			required: true,
+			required: true
 		},
 		email: {
 			type: String,
-			required: true,
+			required: true
 		},
 		resetCode: {
 			type: String,
-			required: false,
+			required: false
 		},
 		end: {
 			type: Date,
-			required: false,
+			required: false
+		},
+		avatar: {
+			type: String,
+			required: true
 		},
 		password: {
 			type: String,
-			required: true,
-		},
+			required: true
+		}
 	},
-	{ timestamps: true },
+	{ timestamps: true }
 );
 
 module.exports = mongoose.model("PreUser", preUserSchema);
