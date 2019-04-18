@@ -18,6 +18,49 @@ app.use((req, res, next) => {
 	next();
 });
 
+//////////////////////////////
+const multer = require("multer");
+const cloudinary = require("cloudinary");
+const cloudinaryStorage = require("multer-storage-cloudinary");
+cloudinary.config({
+	cloud_name: "shonode",
+	api_key: "938448161173529",
+	api_secret: "RzvgdEEa2HReEfHE9l_Lt9Nd-5k"
+});
+const storage = cloudinaryStorage({
+	cloudinary: cloudinary,
+	folder: "demo",
+	allowedFormats: ["jpg", "png", "jpeg"],
+	transformation: [{ width: 500, height: 500, crop: "limit" }],
+	filename: function(req, file, cb) {
+		cb(undefined, Date.now() + file.originalname);
+	},
+	fileFilter: function(req, file, callback) {
+		var ext = path.extname(file.originalname);
+		if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
+			return callback(new Error("Only images are allowed"));
+		}
+		callback(null, true);
+	}
+});
+const parser = multer({ storage: storage });
+
+app.post("/api/test", parser.single("image"), (req, res) => {
+	console.log("req.file"); // to see what is returned to you
+	console.log(req.body.name);
+
+	const image = {};
+	image.url = req.file.url;
+	image.id = req.file.public_id;
+	console.log(image);
+
+	// Image.create(image) // save image information in database
+	// 	.then(newImage => res.json(newImage))
+	// 	.catch(err => console.log(err));
+	res.json(req.file);
+});
+/////////////////////////////
+
 // middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -37,7 +80,7 @@ mongoose
 	.then(() => {
 		console.log("db connected ...");
 	})
-	.catch((err) => {
+	.catch(err => {
 		console.log("db err");
 	});
 

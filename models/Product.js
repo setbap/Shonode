@@ -35,10 +35,11 @@ const productSchema = new Schema(
 			require: true
 		},
 		brand: {
-			type: String,
-			required: false
+			type: Schema.Types.ObjectId,
+			ref: "Brand",
+			require: true
 		},
-		offerPrice: {
+		offPrice: {
 			type: String
 		},
 		description: {
