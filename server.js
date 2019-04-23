@@ -2,11 +2,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const DBurl = require("./configs/secretAndUrl").DBurl;
+const AdminPass = require("./configs/secretAndUrl").pass;
 const bodyParser = require("body-parser");
 // const apiPost = require("./routes/api/post");
 const passport = require("passport");
 // const apiProfile = require("./routes/api/profile");
 const apiUser = require("./routes/api/user");
+const Admin = require("./models/Admin");
+const User = require("./models/User");
 
 // setup server
 const app = express();
@@ -79,9 +82,47 @@ mongoose
 	.connect(DBurl, { useNewUrlParser: true })
 	.then(() => {
 		console.log("db connected ...");
+
+		Admin.findOne({ email: "ebrsina@gmail.com" }).then(admin => {
+			if (!admin) {
+				User.findOne({ email: "ebrsina@gmail.com" }).then(user => {
+					if (!user) {
+						new User({
+							name: "sina",
+							email: "ebrsina@gmail.com",
+							avatar: "aaaaaaaaa",
+							password: AdminPass
+						})
+							.save()
+							.then(user => {
+								new Admin({
+									email: user.email,
+									userId: user.id,
+									prodsAccess: true,
+									orderAccess: true
+								})
+									.save()
+									.then(responce => console.log("created"))
+									.catch(err => console.log("user", err));
+							})
+							.catch(err => console.log("user", err));
+					} else {
+						new Admin({
+							email: user.email,
+							userId: user.id,
+							prodsAccess: true,
+							orderAccess: true
+						})
+							.save()
+							.then(responce => console.log("created"))
+							.catch(err => console.log("admin", err));
+					}
+				});
+			}
+		});
 	})
 	.catch(err => {
-		console.log("db err");
+		console.log(err);
 	});
 
 app.listen(port, () => {
