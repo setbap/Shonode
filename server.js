@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 // const apiProfile = require("./routes/api/profile");
 const apiUser = require("./routes/api/user");
+const apiUserAdmin = require("./routes/api/userAdmin");
 const Admin = require("./models/Admin");
 const User = require("./models/User");
 
@@ -28,7 +29,7 @@ const cloudinaryStorage = require("multer-storage-cloudinary");
 cloudinary.config({
 	cloud_name: "shonode",
 	api_key: "938448161173529",
-	api_secret: "RzvgdEEa2HReEfHE9l_Lt9Nd-5k"
+	api_secret: "RzvgdEEa2HReEfHE9l_Lt9Nd-5k",
 });
 const storage = cloudinaryStorage({
 	cloudinary: cloudinary,
@@ -44,7 +45,7 @@ const storage = cloudinaryStorage({
 			return callback(new Error("Only images are allowed"));
 		}
 		callback(null, true);
-	}
+	},
 });
 const parser = multer({ storage: storage });
 
@@ -76,6 +77,7 @@ require("./configs/passportJWT")(passport);
 // app.use("/api/post", apiPost);
 // app.use("/api/profile", apiProfile);
 app.use("/api/user", apiUser);
+app.use("/api/useradmin", apiUserAdmin);
 
 // conection part
 mongoose
@@ -83,45 +85,45 @@ mongoose
 	.then(() => {
 		console.log("db connected ...");
 
-		Admin.findOne({ email: "ebrsina@gmail.com" }).then(admin => {
+		Admin.findOne({ email: "ebrsina@gmail.com" }).then((admin) => {
 			if (!admin) {
-				User.findOne({ email: "ebrsina@gmail.com" }).then(user => {
+				User.findOne({ email: "ebrsina@gmail.com" }).then((user) => {
 					if (!user) {
 						new User({
 							name: "sina",
 							email: "ebrsina@gmail.com",
 							avatar: "aaaaaaaaa",
-							password: AdminPass
+							password: AdminPass,
 						})
 							.save()
-							.then(user => {
+							.then((user) => {
 								new Admin({
 									email: user.email,
 									userId: user.id,
 									prodsAccess: true,
-									orderAccess: true
+									orderAccess: true,
 								})
 									.save()
-									.then(responce => console.log("created"))
-									.catch(err => console.log("user", err));
+									.then((responce) => console.log("created"))
+									.catch((err) => console.log("user", err));
 							})
-							.catch(err => console.log("user", err));
+							.catch((err) => console.log("user", err));
 					} else {
 						new Admin({
 							email: user.email,
 							userId: user.id,
 							prodsAccess: true,
-							orderAccess: true
+							orderAccess: true,
 						})
 							.save()
-							.then(responce => console.log("created"))
-							.catch(err => console.log("admin", err));
+							.then((responce) => console.log("created"))
+							.catch((err) => console.log("admin", err));
 					}
 				});
 			}
 		});
 	})
-	.catch(err => {
+	.catch((err) => {
 		console.log(err);
 	});
 
