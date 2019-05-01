@@ -9,5 +9,5 @@ const BrandSchema = new Schema({
 		required: true
 	}
 });
-
+BrandSchema.index({'$**':'text'})
 module.exports = mongoose.model("Brand", BrandSchema);

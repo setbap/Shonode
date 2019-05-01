@@ -6,8 +6,9 @@ const CategorySchema = new Schema({
 	gender: { type: String, required: true },
 	imageUrl: {
 		type: String,
-		required: true
-	}
+		required: true,
+	},
 });
+CategorySchema.index({ "$**": "text" });
 
 module.exports = mongoose.model("Category", CategorySchema);

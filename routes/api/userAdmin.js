@@ -38,7 +38,6 @@ router.delete(
 	passport.authenticate("jwt", { session: false }),
 	deleteAdminValid.list,
 	superAdminCheck,
-
 	controller.DeleteAdmin,
 );
 

@@ -9,6 +9,7 @@ const passport = require("passport");
 // const apiProfile = require("./routes/api/profile");
 const apiUser = require("./routes/api/user");
 const apiUserAdmin = require("./routes/api/userAdmin");
+const apiShop = require("./routes/api/shop");
 const Admin = require("./models/Admin");
 const User = require("./models/User");
 
@@ -78,6 +79,7 @@ require("./configs/passportJWT")(passport);
 // app.use("/api/profile", apiProfile);
 app.use("/api/user", apiUser);
 app.use("/api/useradmin", apiUserAdmin);
+app.use("/api/shop", apiShop);
 
 // conection part
 mongoose
