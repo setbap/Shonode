@@ -7,6 +7,7 @@ const newProductValid = require("../../validations/shop/newProduct");
 const newCategoryValid = require("../../validations/shop/newCategory");
 const newCommentValid = require("../../validations/shop/newComment");
 const newiWantValid = require("../../validations/shop/newiWant");
+const newAddToCart = require("../../validations/shop/newAddToCart");
 const getProductsValid = require("../../validations/shop/getProducts");
 const getProductValid = require("../../validations/shop/getSingleProduct");
 
@@ -109,6 +110,26 @@ router.post(
 	passport.authenticate("jwt", { session: false }),
 	newiWantValid.list,
 	controller.postiWant,
+);
+
+// route  : post api/shop/addToCart
+// access : private
+// why    : post new comment in product
+router.post(
+	"/addToCart",
+	passport.authenticate("jwt", { session: false }),
+	newAddToCart.list,
+	controller.postCart,
+);
+
+// route  : post api/shop/getMyCart
+// access : private
+// why    : post new comment in product
+router.get(
+	"/getMyCart",
+	passport.authenticate("jwt", { session: false }),
+
+	controller.getCart,
 );
 
 module.exports = router;

@@ -95,4 +95,4 @@ productSchema.methods.addComment = function(title, content, userId) {
 
 productSchema.index({ "$**": "text" });
 
-module.exports = mongoose.model("product", productSchema);
+module.exports = mongoose.model("Product", productSchema);

@@ -325,3 +325,50 @@ exports.postiWant = (req, res, next) => {
 		})
 		.catch((err) => res.status(404).json(err));
 };
+
+///////////  end  add edit get search  product ///////////////
+
+///////////  create cart , order | delet cart | get factor ///////////////
+
+exports.getCart = (req, res, next) => {
+	User.findOne({ _id: req.user.id })
+		.populate(
+			"cart.items.productId",
+			"-comments -iWant -spec -creator -updatedAt -createdAt",
+		)
+
+		.then((user) => {
+			res.json({
+				products: user.cart.items,
+			});
+		})
+		.catch();
+};
+
+exports.postCart = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const prodId = req.body.productId;
+	Product.findById(prodId)
+		.then((product) => {
+			if (!product) {
+				return res.status(404).json({
+					err: "product not found",
+				});
+			}
+			return User.findOne({ _id: req.user.id }).then((usr) => {
+				if (!usr) {
+					return res.status(404).json({
+						err: "product not found",
+					});
+				}
+				usr.addToCart(product).then((result) => {
+					return res.json(result);
+				});
+			});
+		})
+
+		.catch((err) => console.log(err));
+};
