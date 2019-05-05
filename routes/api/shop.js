@@ -132,4 +132,34 @@ router.get(
 	controller.getCart,
 );
 
+// route  : post api/shop/incCartItem
+// access : private
+// why    : to increase count of one product in cart
+router.post(
+	"/incCartItem",
+	passport.authenticate("jwt", { session: false }),
+	newAddToCart.list,
+	controller.postIncCartItem,
+);
+
+// route  : post api/shop/decCartItem
+// access : private
+// why    : to decrease count of one product in cart
+router.post(
+	"/decCartItem",
+	passport.authenticate("jwt", { session: false }),
+	newAddToCart.list,
+	controller.postDecCartItem,
+);
+
+// route  : post api/shop/deleteCartItem
+// access : private
+// why    : to delete one product in cart
+router.post(
+	"/deleteCartItem",
+	passport.authenticate("jwt", { session: false }),
+	newAddToCart.list,
+	controller.postDeleteCartItem,
+);
+
 module.exports = router;

@@ -5,27 +5,27 @@ const userSchema = new Schema(
 	{
 		email: {
 			type: String,
-			required: true
+			required: true,
 		},
 		name: {
 			type: String,
-			required: true
+			required: true,
 		},
 		avatar: {
 			type: String,
-			required: true
+			required: true,
 		},
 		resetCode: {
 			type: String,
-			required: false
+			required: false,
 		},
 		resetTime: {
 			type: Date,
-			required: false
+			required: false,
 		},
 		password: {
 			type: String,
-			required: true
+			required: true,
 		},
 		cart: {
 			items: [
@@ -33,21 +33,21 @@ const userSchema = new Schema(
 					productId: {
 						type: Schema.Types.ObjectId,
 						required: true,
-						ref: "Product"
+						ref: "Product",
 					},
 					quantity: {
 						type: Schema.Types.Number,
-						required: true
-					}
-				}
-			]
-		}
+						required: true,
+					},
+				},
+			],
+		},
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 userSchema.methods.addToCart = function(product) {
-	const cartProductIndex = this.cart.items.findIndex(cp => {
+	const cartProductIndex = this.cart.items.findIndex((cp) => {
 		return cp.productId.toString() === product._id.toString();
 	});
 	let newQuantity = 1;
@@ -59,18 +59,64 @@ userSchema.methods.addToCart = function(product) {
 	} else {
 		updatedCartItems.push({
 			productId: product._id,
-			quantity: newQuantity
+			quantity: newQuantity,
 		});
 	}
 	const updatedCart = {
-		items: updatedCartItems
+		items: updatedCartItems,
+	};
+	this.cart = updatedCart;
+	return this.save();
+};
+
+userSchema.methods.incCount = function(product) {
+	const cartProductIndex = this.cart.items.findIndex((cp) => {
+		return cp.productId.toString() === product._id.toString();
+	});
+	let newQuantity = 1;
+	const updatedCartItems = [...this.cart.items];
+
+	if (cartProductIndex >= 0) {
+		newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+		updatedCartItems[cartProductIndex].quantity = newQuantity;
+	} else {
+		return Promise.reject();
+	}
+	const updatedCart = {
+		items: updatedCartItems,
+	};
+	this.cart = updatedCart;
+	return this.save();
+};
+
+userSchema.methods.decCount = function(product) {
+	const cartProductIndex = this.cart.items.findIndex((cp) => {
+		return cp.productId.toString() === product._id.toString();
+	});
+	let newQuantity = 1;
+	const updatedCartItems = [...this.cart.items];
+
+	if (cartProductIndex >= 0) {
+		newQuantity = this.cart.items[cartProductIndex].quantity - 1;
+		if (newQuantity === 0) {
+			updatedCartItems = this.cart.items.filter((item) => {
+				return item.productId.toString() !== product._id.toString();
+			});
+		} else {
+			updatedCartItems[cartProductIndex].quantity = newQuantity;
+		}
+	} else {
+		return Promise.reject();
+	}
+	const updatedCart = {
+		items: updatedCartItems,
 	};
 	this.cart = updatedCart;
 	return this.save();
 };
 
 userSchema.methods.deleteFromCart = function(productId) {
-	const updatedCartItems = this.cart.items.filter(item => {
+	const updatedCartItems = this.cart.items.filter((item) => {
 		return item.productId.toString() !== productId.toString();
 	});
 	this.cart.items = updatedCartItems;

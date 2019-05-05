@@ -372,3 +372,129 @@ exports.postCart = (req, res, next) => {
 
 		.catch((err) => console.log(err));
 };
+
+exports.postIncCartItem = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const prodId = req.body.productId;
+	Product.findById(prodId)
+		.then((product) => {
+			if (!product) {
+				return res.status(404).json({
+					err: "product not found",
+				});
+			}
+			return User.findOne({ _id: req.user.id }).then((usr) => {
+				if (!usr) {
+					return res.status(404).json({
+						err: "product not found",
+					});
+				}
+				usr.incCount(product).then((result) => {
+					return res.json(result);
+				});
+			});
+		})
+
+		.catch((err) => console.log(err));
+};
+
+exports.postDecCartItem = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const prodId = req.body.productId;
+	Product.findById(prodId)
+		.then((product) => {
+			if (!product) {
+				return res.status(404).json({
+					err: "product not found",
+				});
+			}
+			return User.findOne({ _id: req.user.id }).then((usr) => {
+				if (!usr) {
+					return res.status(404).json({
+						err: "product not found",
+					});
+				}
+				usr.decCount(product).then((result) => {
+					return res.json(result);
+				});
+			});
+		})
+
+		.catch((err) => console.log(err));
+};
+
+exports.postDeleteCartItem = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const prodId = req.body.productId;
+	Product.findById(prodId)
+		.then((product) => {
+			if (!product) {
+				return res.status(404).json({
+					err: "product not found",
+				});
+			}
+			return User.findOne({ _id: req.user.id }).then((usr) => {
+				if (!usr) {
+					return res.status(404).json({
+						err: "product not found",
+					});
+				}
+				usr.deleteFromCart(product).then((result) => {
+					return res.json(result);
+				});
+			});
+		})
+
+		.catch((err) => console.log(err));
+};
+
+exports.postCreateOrder = (req, res, next) => {
+	const prodId = req.body.productId;
+	// const items = [];
+
+	Product.findById(prodId).then((product) => {
+		if (!product) {
+			return res.status(404).json({
+				err: "product not found",
+			});
+		}
+		return User.findOne({ _id: req.user.id }).then((usr) => {
+			if (!usr) {
+				return res.status(404).json({
+					err: "product not found",
+				});
+			}
+			user.populate("cart.items.productId")
+				.execPopulate()
+				.then((user) => {
+					items = user.cart.items.map((i) => {
+						return {
+							product: { ...i.productId._doc },
+							quantity: i.quantity,
+						};
+					});
+					const order = Order({
+						user: {
+							email: req.user.email,
+							userId: req.user._id,
+						},
+						items: items,
+					});
+					return order.save();
+				})
+				.then(() => req.user.clearCart())
+				.then((result) => {
+					return res.json(result);
+				});
+		});
+	});
+};
