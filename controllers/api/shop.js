@@ -176,9 +176,13 @@ exports.postAddProduct = (req, res, next) => {
 				})
 					.save()
 					.then((prod) => {
+						console.log("prod added");
+
 						return res.json(prod);
 					})
 					.catch((err) => {
+						console.log(err);
+
 						return res.status(500).json({
 							err: "err in save ",
 						});
@@ -350,7 +354,7 @@ exports.postCart = (req, res, next) => {
 	if (!errors.isEmpty()) {
 		return res.status(422).json({ errors: errors.array() });
 	}
-	const prodId = req.body.productId;
+	const prodId = req.body.prodId;
 	Product.findById(prodId)
 		.then((product) => {
 			if (!product) {
@@ -378,7 +382,7 @@ exports.postIncCartItem = (req, res, next) => {
 	if (!errors.isEmpty()) {
 		return res.status(422).json({ errors: errors.array() });
 	}
-	const prodId = req.body.productId;
+	const prodId = req.body.prodId;
 	Product.findById(prodId)
 		.then((product) => {
 			if (!product) {
@@ -389,7 +393,7 @@ exports.postIncCartItem = (req, res, next) => {
 			return User.findOne({ _id: req.user.id }).then((usr) => {
 				if (!usr) {
 					return res.status(404).json({
-						err: "product not found",
+						err: "usr not found",
 					});
 				}
 				usr.incCount(product).then((result) => {
@@ -406,7 +410,7 @@ exports.postDecCartItem = (req, res, next) => {
 	if (!errors.isEmpty()) {
 		return res.status(422).json({ errors: errors.array() });
 	}
-	const prodId = req.body.productId;
+	const prodId = req.body.prodId;
 	Product.findById(prodId)
 		.then((product) => {
 			if (!product) {
@@ -434,7 +438,7 @@ exports.postDeleteCartItem = (req, res, next) => {
 	if (!errors.isEmpty()) {
 		return res.status(422).json({ errors: errors.array() });
 	}
-	const prodId = req.body.productId;
+	const prodId = req.body.prodId;
 	Product.findById(prodId)
 		.then((product) => {
 			if (!product) {
@@ -448,9 +452,13 @@ exports.postDeleteCartItem = (req, res, next) => {
 						err: "product not found",
 					});
 				}
-				usr.deleteFromCart(product).then((result) => {
-					return res.json(result);
-				});
+				usr.deleteFromCart(product._id)
+					.then((result) => {
+						return res.json(result);
+					})
+					.catch((err) => {
+						return res.status(404).json({ err: "not found" });
+					});
 			});
 		})
 
@@ -496,5 +504,11 @@ exports.postCreateOrder = (req, res, next) => {
 					return res.json(result);
 				});
 		});
+	});
+};
+
+exports.getOrders = (req, res, next) => {
+	Order.find({ "user.userId": req.user._id }).then((orders) => {
+		res.json(orders);
 	});
 };

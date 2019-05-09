@@ -94,7 +94,7 @@ userSchema.methods.decCount = function(product) {
 		return cp.productId.toString() === product._id.toString();
 	});
 	let newQuantity = 1;
-	const updatedCartItems = [...this.cart.items];
+	let updatedCartItems = [...this.cart.items];
 
 	if (cartProductIndex >= 0) {
 		newQuantity = this.cart.items[cartProductIndex].quantity - 1;
@@ -105,13 +105,13 @@ userSchema.methods.decCount = function(product) {
 		} else {
 			updatedCartItems[cartProductIndex].quantity = newQuantity;
 		}
-	} else {
-		return Promise.reject();
+
+		const updatedCart = {
+			items: updatedCartItems,
+		};
+		this.cart = updatedCart;
 	}
-	const updatedCart = {
-		items: updatedCartItems,
-	};
-	this.cart = updatedCart;
+
 	return this.save();
 };
 
