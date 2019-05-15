@@ -7,11 +7,11 @@ module.exports.list = [
 			.trim(),
 		check("title")
 			.isString()
-			.isLength({ max: 20 })
+			.isLength({ min: 4, max: 20 })
 			.trim(),
 		check("content")
 			.isString()
-			.isLength({ max: 220 })
+			.isLength({ min: 8, max: 220 })
 			.trim(),
 	],
 ];

@@ -240,6 +240,7 @@ exports.postGetSingleProduct = (req, res, next) => {
 	Product.findOne(filter)
 		.populate("category")
 		.populate("brand")
+		.populate("comments.userId", "name")
 
 		.then((product) => {
 			if (product) {
