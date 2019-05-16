@@ -102,7 +102,7 @@ router.post(
 	controller.postComment,
 );
 
-// route  : post api/shop/comment
+// route  : post api/shop/iWant
 // access : private
 // why    : post new comment in product
 router.post(

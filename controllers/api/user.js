@@ -128,15 +128,20 @@ exports.postLogin = async (req, res, next) => {
 			id: user._id,
 			avatar: user.avatar,
 		};
-		jwt.sign(jwtpayload, jwtSecret, { expiresIn: "1h" }, (err, encoded) => {
-			if (err) {
-				throw new Error("err in jwt");
-			}
-			res.status(201).json({
-				done: true,
-				secret: "bearer " + encoded,
-			});
-		});
+		jwt.sign(
+			jwtpayload,
+			jwtSecret,
+			{ expiresIn: "12h" },
+			(err, encoded) => {
+				if (err) {
+					throw new Error("err in jwt");
+				}
+				res.status(201).json({
+					done: true,
+					secret: "bearer " + encoded,
+				});
+			},
+		);
 	} catch (err) {
 		console.log(err);
 		res.status(500).send("err in creating");
