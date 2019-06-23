@@ -51,18 +51,20 @@ const storage = cloudinaryStorage({
 const parser = multer({ storage: storage });
 
 app.post("/api/test", parser.single("image"), (req, res) => {
-	console.log("req.file"); // to see what is returned to you
-	console.log(req.body.name);
+	// console.log(req.file); // to see what is returned to you
+	// console.log(req.body);
 
-	const image = {};
-	image.url = req.file.url;
-	image.id = req.file.public_id;
-	console.log(image);
+	// const image = {};
+	// image.url = req.file.url;
+	// image.id = req.file.public_id;
+	// console.log(image);
 
 	// Image.create(image) // save image information in database
 	// 	.then(newImage => res.json(newImage))
-	// 	.catch(err => console.log(err));
-	res.json(req.file);
+	// 	.catch(err => console.log(err));'
+	console.log({ url: req.file.url });
+
+	res.json({ url: req.file.url });
 });
 /////////////////////////////
 

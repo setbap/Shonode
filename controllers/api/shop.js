@@ -6,9 +6,36 @@ const Product = require("../../models/Product");
 const { validationResult } = require("express-validator/check");
 
 /////////////// cat&bradn part   /////////////
+
+exports.GetBrandLimit = (req, res, next) => {
+	var perPage = 7;
+
+	Brand.find({})
+		.limit(perPage)
+		.then((brand) => {
+			res.json({
+				brand: brand,
+			});
+		});
+};
+
+exports.GetCatLimit = (req, res, next) => {
+	var perPage = 4;
+
+	Category.find({})
+		.limit(perPage)
+		.then((cat) => {
+			res.json({
+				cat: cat,
+			});
+		});
+};
+
 exports.postBrand = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
+		console.log({ errors: errors.array() });
+
 		return res.status(422).json({ errors: errors.array() });
 	}
 	const { imageUrl, name, desc } = req.body;
@@ -82,6 +109,13 @@ exports.getCategories = (req, res, next) => {
 	});
 };
 
+exports.postFindCategoriesByGender = (req, res, next) => {
+	const gender = req.body.gender;
+	Category.find({ gender: gender }).then((cat) => {
+		res.json({ cat });
+	});
+};
+
 exports.postFindCategories = (req, res, next) => {
 	const cat = req.body.categorySearch;
 	// var regex = new RegExp(["^", cat, "$"].join(""), "i");
@@ -94,7 +128,6 @@ exports.postFindBrands = (req, res, next) => {
 	const brand = req.body.brandSearch;
 	// var regex = new RegExp("^" + req.body.brandSearch.toLowerCase(), "i");
 
-	console.log(regex);
 	Brand.find({ name: new RegExp(brand, "gi") }).then((brands) => {
 		res.json({ brands });
 	});
@@ -203,7 +236,7 @@ exports.postGetProducts = (req, res, next) => {
 	if (!errors.isEmpty()) {
 		return res.status(422).json({ errors: errors.array() });
 	}
-	var perPage = 2;
+	var perPage = 12;
 	var page = req.body.page || 1;
 	const filter = {};
 	if (req.body.category) filter.category = req.body.category;
@@ -221,6 +254,8 @@ exports.postGetProducts = (req, res, next) => {
 						products,
 						current: page,
 						pages: Math.ceil(count / perPage),
+						count: count,
+						itemPerPage: 12,
 					});
 				});
 		});
@@ -265,6 +300,63 @@ exports.postFindProducts = (req, res, next) => {
 	})
 		.then((prods) => {
 			return res.json(prods);
+		})
+		.catch((err) => {
+			return res.status(500).json({
+				err: "internal err",
+			});
+		});
+};
+
+exports.postFindProductsByCategory = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const word = req.body.catId;
+	// var regex = new RegExp(["^", cat, "$"].join(""), "i");
+	Category.findOne({ _id: word })
+		.then((cat) => {
+			Product.find({ category: word })
+				.select("title brand category id price imageUrl")
+				.populate("category", "name")
+				.populate("brand", "name")
+				.then((prods) => {
+					return res.json({ prods, cat: cat });
+				})
+				.catch((err) => {
+					return res.status(500).json({
+						err: "internal err",
+					});
+				});
+		})
+		.catch((err) => {
+			return res.status(500).json({
+				err: "internal err",
+			});
+		});
+};
+
+exports.postFindProductsByBrand = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const word = req.body.brandId;
+	Brand.findOne({ _id: word })
+		.then((brand) => {
+			Product.find({ brand: word })
+				.select("title brand category id price imageUrl")
+				.populate("category", "name")
+				.populate("brand", "name")
+				.then((prods) => {
+					return res.json({ prods: prods, brand: brand });
+				})
+				.catch((err) => {
+					return res.status(500).json({
+						err: "internal err",
+					});
+				});
 		})
 		.catch((err) => {
 			return res.status(500).json({

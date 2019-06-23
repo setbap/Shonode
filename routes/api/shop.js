@@ -10,8 +10,13 @@ const newiWantValid = require("../../validations/shop/newiWant");
 const newAddToCart = require("../../validations/shop/newAddToCart");
 const getProductsValid = require("../../validations/shop/getProducts");
 const getProductValid = require("../../validations/shop/getSingleProduct");
+const getProductByCatValid = require("../../validations/shop/getProductsByCat");
+const getProductByBrandValid = require("../../validations/shop/getProductsByBrand");
 
 const router = express.Router();
+
+router.get("/getcatl", controller.GetCatLimit);
+router.get("/getbrandl", controller.GetBrandLimit);
 
 // route  : post api/shop/allBrands
 // access : public
@@ -46,12 +51,21 @@ router.post(
 );
 
 // route  : post api/shop/newCategry
-// access : private-->orderAdmin
-// why    : to add new brand
+// access : public
+// why    : to search in category
 router.post(
 	"/searchCategory",
 	// newCategoryValid.list,
 	controller.postFindCategories,
+);
+
+// route  : post api/shop/searchCategoryByGender
+// access : public
+// why    : to find brand by category
+router.post(
+	"/searchCategoryByGender",
+	// newCategoryValid.list,
+	controller.postFindCategoriesByGender,
 );
 
 // route  : post api/shop/newCategry
@@ -91,6 +105,24 @@ router.post(
 // access : public
 // why    : to view one product
 router.post("/searchProducts", controller.postFindProducts);
+
+// route  : post api/shop/findProductByCat
+// access : public
+// why    : to view one product
+router.post(
+	"/findProductByCat",
+	getProductByCatValid.list,
+	controller.postFindProductsByCategory,
+);
+
+// route  : post api/shop/searchProducts
+// access : public
+// why    : to view one product
+router.post(
+	"/findProductByBrand",
+	getProductByBrandValid.list,
+	controller.postFindProductsByBrand,
+);
 
 // route  : post api/shop/comment
 // access : private

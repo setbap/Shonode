@@ -11,6 +11,7 @@ module.exports.list = [
 			.isLength({ max: 10 })
 			.trim(),
 		check("imageUrl")
+			.isLength({ min: 5 })
 			.isString()
 			.trim(),
 	],
