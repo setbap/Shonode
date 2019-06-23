@@ -15,7 +15,8 @@ const User = require("./models/User");
 
 // setup server
 const app = express();
-const port = process.env.PORT_ENV || 5000;
+const port = process.env.PORT || 5000;
+
 app.use((req, res, next) => {
 	res.setHeader("access-control-allow-origin", "*");
 	res.setHeader("access-control-allow-methods", "GET,PUT,DELETE,PATCH,POST");
