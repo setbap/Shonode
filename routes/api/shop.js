@@ -12,6 +12,7 @@ const getProductsValid = require("../../validations/shop/getProducts");
 const getProductValid = require("../../validations/shop/getSingleProduct");
 const getProductByCatValid = require("../../validations/shop/getProductsByCat");
 const getProductByBrandValid = require("../../validations/shop/getProductsByBrand");
+const newOrderValid = require("../../validations/shop/newOrder");
 
 const router = express.Router();
 
@@ -164,6 +165,16 @@ router.get(
 	controller.getCart,
 );
 
+// route  : post api/shop/getMyCart
+// access : private
+// why    : post new comment in product
+router.get(
+	"/getMyIwant",
+	passport.authenticate("jwt", { session: false }),
+
+	controller.getUserIwant,
+);
+
 // route  : post api/shop/incCartItem
 // access : private
 // why    : to increase count of one product in cart
@@ -192,6 +203,34 @@ router.post(
 	passport.authenticate("jwt", { session: false }),
 	newAddToCart.list,
 	controller.postDeleteCartItem,
+);
+
+// route  : post api/shop/createOrder
+// access : private
+// why    : to buy some thing
+router.post(
+	"/createOrder",
+	passport.authenticate("jwt", { session: false }),
+	newOrderValid.list,
+	controller.postCreateOrder,
+);
+
+// route  : post api/shop/createOrder
+// access : private
+// why    : to buy some thing
+router.get(
+	"/getOrders",
+	passport.authenticate("jwt", { session: false }),
+	controller.getOrders,
+);
+
+// route  : post api/shop/createOrder
+// access : private
+// why    : to buy some thing
+router.post(
+	"/getFactore",
+	passport.authenticate("jwt", { session: false }),
+	controller.postGetFactore,
 );
 
 module.exports = router;

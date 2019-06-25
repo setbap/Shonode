@@ -3,6 +3,9 @@ const Brand = require("../../models/Brand");
 const Category = require("../../models/Category");
 const User = require("../../models/User");
 const Product = require("../../models/Product");
+const PDFDocument = require("pdfkit");
+const path = require("path");
+const fs = require("fs");
 const { validationResult } = require("express-validator/check");
 
 /////////////// cat&bradn part   /////////////
@@ -406,8 +409,23 @@ exports.postiWant = (req, res, next) => {
 				.indexOf(userId);
 			if (index !== -1) {
 				//unlike
+				User.findOne({ _id: userId }).then((person) => {
+					person
+						.postIwant(prodId)
+						.then((res) => console.log("added"))
+						.catch((err) => console.log("not added"));
+				});
+
 				prod.iWant.splice(index, 1);
 			} else {
+				User.findOne({ _id: userId }).then((person) => {
+					console.log(person);
+
+					person
+						.postIwant(prodId)
+						.then((res) => console.log("added"))
+						.catch((err) => console.log("not added"));
+				});
 				prod.iWant.unshift({ userId });
 			}
 
@@ -431,7 +449,7 @@ exports.getCart = (req, res, next) => {
 	User.findOne({ _id: req.user.id })
 		.populate(
 			"cart.items.productId",
-			"-comments -iWant -spec -creator -updatedAt -createdAt",
+			"-comments -iWant -spec -creator -updatedAt -password -createdAt",
 		)
 
 		.then((user) => {
@@ -470,6 +488,21 @@ exports.postCart = (req, res, next) => {
 		.catch((err) => console.log(err));
 };
 
+exports.getUserIwant = (req, res, next) => {
+	User.findOne({ _id: req.user.id })
+		.populate(
+			"iWant.productId",
+			"-comments -iWant -spec -creator -updatedAt -password -createdAt",
+		)
+
+		.then((user) => {
+			res.json({
+				products: user.iWant,
+			});
+		})
+		.catch();
+};
+
 exports.postIncCartItem = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -490,7 +523,18 @@ exports.postIncCartItem = (req, res, next) => {
 					});
 				}
 				usr.incCount(product).then((result) => {
-					return res.json(result);
+					return User.findOne({ _id: req.user.id })
+						.populate(
+							"cart.items.productId",
+							"-comments -iWant -spec -creator -updatedAt -password -createdAt",
+						)
+
+						.then((user) => {
+							res.json({
+								products: user.cart.items,
+							});
+						})
+						.catch();
 				});
 			});
 		})
@@ -518,7 +562,18 @@ exports.postDecCartItem = (req, res, next) => {
 					});
 				}
 				usr.decCount(product).then((result) => {
-					return res.json(result);
+					return User.findOne({ _id: req.user.id })
+						.populate(
+							"cart.items.productId",
+							"-comments -iWant -spec -creator -updatedAt -password -createdAt",
+						)
+
+						.then((user) => {
+							res.json({
+								products: user.cart.items,
+							});
+						})
+						.catch();
 				});
 			});
 		})
@@ -547,7 +602,18 @@ exports.postDeleteCartItem = (req, res, next) => {
 				}
 				usr.deleteFromCart(product._id)
 					.then((result) => {
-						return res.json(result);
+						return User.findOne({ _id: req.user.id })
+							.populate(
+								"cart.items.productId",
+								"-comments -iWant -spec -creator -updatedAt -password -createdAt",
+							)
+
+							.then((user) => {
+								res.json({
+									products: user.cart.items,
+								});
+							})
+							.catch();
 					})
 					.catch((err) => {
 						return res.status(404).json({ err: "not found" });
@@ -559,49 +625,163 @@ exports.postDeleteCartItem = (req, res, next) => {
 };
 
 exports.postCreateOrder = (req, res, next) => {
-	const prodId = req.body.productId;
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+	const city = req.body.city;
+	const state = req.body.state;
+	const name = req.body.name;
+	const lastname = req.body.lastname;
+	const address = req.body.address;
+
 	// const items = [];
 
-	Product.findById(prodId).then((product) => {
-		if (!product) {
+	return User.findOne({ _id: req.user.id }).then((user) => {
+		if (!user) {
 			return res.status(404).json({
-				err: "product not found",
+				err: "user not found",
 			});
 		}
-		return User.findOne({ _id: req.user.id }).then((usr) => {
-			if (!usr) {
-				return res.status(404).json({
-					err: "product not found",
-				});
-			}
-			user.populate("cart.items.productId")
-				.execPopulate()
-				.then((user) => {
-					items = user.cart.items.map((i) => {
-						return {
-							product: { ...i.productId._doc },
-							quantity: i.quantity,
-						};
+		let sum = 0;
+		user.populate("cart.items.productId")
+			.execPopulate()
+			.then((user) => {
+				if (user.cart.items.legth <= 0) {
+					return res.status(404).json({
+						err: "cart is empty",
 					});
-					const order = Order({
-						user: {
-							email: req.user.email,
-							userId: req.user._id,
-						},
-						items: items,
-					});
-					return order.save();
-				})
-				.then(() => req.user.clearCart())
-				.then((result) => {
-					return res.json(result);
+				}
+				items = user.cart.items.map((i) => {
+					sum += i.quantity * i.productId.price;
+					return {
+						product: { ...i.productId._doc },
+						quantity: i.quantity,
+					};
 				});
-		});
+				const order = Order({
+					user: {
+						email: req.user.email,
+						userId: req.user.id,
+					},
+					items: items,
+					name,
+					lastname,
+					address,
+					city,
+					state,
+					price: sum,
+				});
+				return order.save();
+			})
+			.then(() => {
+				return User.findOne({ _id: req.user.id }).then((user) => {
+					user.clearCart();
+				});
+			})
+			.then((result) => {
+				return res.json({ done: "order craeted" });
+			});
 	});
 };
 
+/////
+
 exports.getOrders = (req, res, next) => {
-	Order.find({ "user.userId": req.user._id }).then((orders) => {
+	Order.find({ "user.userId": req.user.id }).then((orders) => {
 		res.json(orders);
 	});
+};
+
+exports.getNotdeliveredOrders = (req, res, next) => {
+	Order.find({ deliver: false }).then((orders) => {
+		res.json(orders);
+	});
+};
+
+exports.getdeliveredOrders = (req, res, next) => {
+	Order.find({ deliver: true }).then((orders) => {
+		res.json(orders);
+	});
+};
+
+exports.postdeliveredOrder = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(422).json({ errors: errors.array() });
+	}
+
+	const did = req.body.deliverId;
+	Order.findOne({ _id: did }).then((order) => {
+		order
+			.delivered()
+			.then((resu) => {
+				res.json(orders);
+			})
+			.catch((err) => {
+				res.status(500).json({ done: "no" });
+			});
+	});
+};
+
+exports.postGetFactore = (req, res, next) => {
+	const factoreId = req.body.fid;
+
+	Order.findById(factoreId)
+		.then((order) => {
+			if (order.user.userId.toString() === req.user.id.toString()) {
+				const fileInfo = "invoice-" + factoreId + ".pdf";
+				const filePath = path.join("factores", fileInfo);
+				const pdfDoc = new PDFDocument();
+				res.setHeader("Content-Type", "application/pdf");
+				res.setHeader(
+					"Content-Disposition",
+					'inline; filename="' + fileInfo + '"',
+				);
+				pdfDoc.pipe(fs.createWriteStream(filePath));
+				pdfDoc.pipe(res);
+				let totalPrice = 0;
+				order.items.forEach((prod) => {
+					totalPrice += prod.quantity * prod.product.price;
+					pdfDoc
+						.fontSize(14)
+						.text(
+							prod.product.title +
+								" - " +
+								prod.quantity +
+								" x " +
+								"$" +
+								prod.product.price,
+						);
+				});
+				pdfDoc.text("---");
+				pdfDoc.fontSize(20).text("Total Price: $" + totalPrice);
+				pdfDoc.text("-----------------------");
+				pdfDoc
+					.fontSize(20)
+					.text("sended to:" + order.name + " " + order.lastname);
+
+				pdfDoc
+					.fontSize(20)
+					.text(
+						"with address :" +
+							order.city +
+							" " +
+							order.state +
+							" " +
+							order.address,
+					);
+
+				pdfDoc.end();
+				res.sendFile(
+					`${__dirname}/factores/"invoice-"${factoreId}".pdf"/`,
+				);
+			} else {
+				res.status(400).json({ err: "wrong id" });
+			}
+		})
+		.catch((err) => {
+			res.status(500).json({ err });
+			console.log({ err });
+		});
 };

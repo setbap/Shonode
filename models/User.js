@@ -27,6 +27,15 @@ const userSchema = new Schema(
 			type: String,
 			required: true,
 		},
+		iWant: [
+			{
+				productId: {
+					type: Schema.Types.ObjectId,
+					required: true,
+					ref: "Product",
+				},
+			},
+		],
 		cart: {
 			items: [
 				{
@@ -66,6 +75,27 @@ userSchema.methods.addToCart = function(product) {
 		items: updatedCartItems,
 	};
 	this.cart = updatedCart;
+	return this.save();
+};
+
+userSchema.methods.postIwant = function(prodId) {
+	const IwantIndex = this.iWant.findIndex((cp) => {
+		return cp.productId.toString() === prodId.toString();
+	});
+	// let newQuantity = 1;
+	let updatedIwant = [...this.iWant];
+
+	if (IwantIndex >= 0) {
+		updatedIwant = this.iWant.filter((item) => {
+			return item.productId.toString() !== prodId.toString();
+		});
+	} else {
+		updatedIwant.push({ productId: prodId });
+	}
+	// const updatedCart = {
+	// 	items: updatedIwant,
+	// };
+	this.iWant = updatedIwant;
 	return this.save();
 };
 

@@ -23,7 +23,7 @@ exports.getProducts = (req, res, next) => {
 	Product.find({})
 		.skip(perPage * page - perPage)
 		.limit(perPage)
-		.then(products => {
+		.then((products) => {
 			Product.countDocuments().exec(function(err, count) {
 				if (err) return next(err);
 				res.render("shop/product-list", {
@@ -33,7 +33,7 @@ exports.getProducts = (req, res, next) => {
 					isAuthenticated: req.session.isLoggedIn,
 					products: products,
 					current: page,
-					pages: Math.ceil(count / perPage)
+					pages: Math.ceil(count / perPage),
 				});
 			});
 		});
@@ -51,7 +51,7 @@ exports.getIndex = (req, res, next) => {
 				prods: products,
 				pageTitle: "Shop",
 				path: "/",
-				isAuthenticated: req.session.isLoggedIn
+				isAuthenticated: req.session.isLoggedIn,
 			});
 		});
 };
@@ -68,7 +68,7 @@ exports.getProduct = async (req, res, next) => {
 			product: product,
 			pageTitle: "yah",
 			path: "/products",
-			isAuthenticated: req.session.isLoggedIn
+			isAuthenticated: req.session.isLoggedIn,
 		});
 	} catch (error) {
 		console.log("getProduct");
@@ -79,13 +79,13 @@ exports.getCart = (req, res, next) => {
 	req.user
 		.populate("cart.items.productId")
 		.execPopulate()
-		.then(user => {
+		.then((user) => {
 			// console.log();
 			res.render("shop/cart", {
 				path: "/cart",
 				pageTitle: "Your Cart",
 				products: user.cart.items,
-				isAuthenticated: req.session.isLoggedIn
+				isAuthenticated: req.session.isLoggedIn,
 			});
 		})
 		.catch();
@@ -94,14 +94,14 @@ exports.getCart = (req, res, next) => {
 exports.postCart = (req, res, next) => {
 	const prodId = req.body.productId;
 	Product.findById(prodId)
-		.then(product => {
+		.then((product) => {
 			return req.user.addToCart(product);
 		})
-		.then(result => {
+		.then((result) => {
 			console.log(result);
 			res.redirect("/cart");
 		})
-		.catch(err => console.log(err));
+		.catch((err) => console.log(err));
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
@@ -109,7 +109,7 @@ exports.postCartDeleteProduct = (req, res, next) => {
 	req.user
 		.deleteFromCart(pid)
 		.then(() => res.redirect("/cart"))
-		.catch(err => console.log(err));
+		.catch((err) => console.log(err));
 };
 
 exports.postCreateOrder = (req, res, next) => {
@@ -118,19 +118,19 @@ exports.postCreateOrder = (req, res, next) => {
 	req.user
 		.populate("cart.items.productId")
 		.execPopulate()
-		.then(user => {
-			items = user.cart.items.map(i => {
+		.then((user) => {
+			items = user.cart.items.map((i) => {
 				return {
 					product: { ...i.productId._doc },
-					quantity: i.quantity
+					quantity: i.quantity,
 				};
 			});
 			const order = Order({
 				user: {
 					email: req.user.email,
-					userId: req.user._id
+					userId: req.user._id,
 				},
-				items: items
+				items: items,
 			});
 			return order.save();
 		})
@@ -139,12 +139,12 @@ exports.postCreateOrder = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-	Order.find({ "user.userId": req.user._id }).then(orders => {
+	Order.find({ "user.userId": req.user._id }).then((orders) => {
 		res.render("shop/orders", {
 			path: "/orders",
 			pageTitle: "Your Orders",
 			orders,
-			isAuthenticated: req.session.isLoggedIn
+			isAuthenticated: req.session.isLoggedIn,
 		});
 	});
 };
@@ -152,7 +152,7 @@ exports.getOrders = (req, res, next) => {
 exports.getFactore = (req, res, next) => {
 	const factoreId = req.params.factoreId;
 	Order.findById(factoreId)
-		.then(order => {
+		.then((order) => {
 			if (order.user.userId.toString() === req.user._id.toString()) {
 				const fileInfo = "invoice-" + factoreId + ".pdf";
 				const filePath = path.join("factores", fileInfo);
@@ -160,12 +160,12 @@ exports.getFactore = (req, res, next) => {
 				res.setHeader("Content-Type", "application/pdf");
 				res.setHeader(
 					"Content-Disposition",
-					'inline; filename="' + fileInfo + '"'
+					'inline; filename="' + fileInfo + '"',
 				);
 				pdfDoc.pipe(fs.createWriteStream(filePath));
 				pdfDoc.pipe(res);
 				let totalPrice = 0;
-				order.items.forEach(prod => {
+				order.items.forEach((prod) => {
 					totalPrice += prod.quantity * prod.product.price;
 					pdfDoc
 						.fontSize(14)
@@ -175,7 +175,7 @@ exports.getFactore = (req, res, next) => {
 								prod.quantity +
 								" x " +
 								"$" +
-								prod.product.price
+								prod.product.price,
 						);
 				});
 				pdfDoc.text("---");
@@ -185,7 +185,7 @@ exports.getFactore = (req, res, next) => {
 				res.redirect("/orders");
 			}
 		})
-		.catch(err => {
+		.catch((err) => {
 			console.log(err);
 			res.redirect("/orders");
 		});
