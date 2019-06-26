@@ -469,7 +469,7 @@ exports.getWant = (req, res, next) => {
 
 		.then((user) => {
 			res.json({
-				products: user.cart.items,
+				products: user.iWant,
 			});
 		})
 		.catch();
