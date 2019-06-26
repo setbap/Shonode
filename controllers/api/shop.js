@@ -460,6 +460,21 @@ exports.getCart = (req, res, next) => {
 		.catch();
 };
 
+exports.getWant = (req, res, next) => {
+	User.findOne({ _id: req.user.id })
+		.populate(
+			"iWant.productId",
+			"-comments -iWant -spec -creator -updatedAt -password -createdAt",
+		)
+
+		.then((user) => {
+			res.json({
+				products: user.cart.items,
+			});
+		})
+		.catch();
+};
+
 exports.postCart = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {

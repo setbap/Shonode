@@ -161,8 +161,16 @@ router.post(
 router.get(
 	"/getMyCart",
 	passport.authenticate("jwt", { session: false }),
-
 	controller.getCart,
+);
+
+// route  : post api/shop/getMyCart
+// access : private
+// why    : post new comment in product
+router.get(
+	"/getiwant",
+	passport.authenticate("jwt", { session: false }),
+	controller.getWant,
 );
 
 // route  : post api/shop/getMyCart
